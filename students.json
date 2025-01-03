@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1735915758871,
+    "name": "shreya",
+    "rollNumber": "1",
+    "attendance": 1
+  },
+  {
+    "id": 1735915770845,
+    "name": "srinika",
+    "rollNumber": "2",
+    "attendance": 0
+  },
+  {
+    "id": 1735915790053,
+    "name": "veena",
+    "rollNumber": "3",
+    "attendance": 1
+  },
+  {
+    "id": 1735916255112,
+    "name": "honey",
+    "rollNumber": "4",
+    "attendance": 0
+  },
+  {
+    "id": 1735916301122,
+    "name": "vindya",
+    "rollNumber": "10",
+    "attendance": 1
+  }
+]
