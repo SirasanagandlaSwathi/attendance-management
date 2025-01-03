@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance App</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f7fc;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #3f51b5;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      margin: 0;
+      font-size: 2.5em;
+      letter-spacing: 2px;
+    }
+    h2 {
+      font-size: 1.8em;
+      margin-bottom: 15px;
+    }
+    .container {
+      width: 80%;
+      margin: 30px auto;
+      max-width: 1200px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 15px;
+    }
+    .form-group input {
+      padding: 12px;
+      font-size: 1.1em;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .form-group button {
+      padding: 12px 20px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .form-group button:hover {
+      background-color: #45a049;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 1.1em;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+      background-color: #f9f9f9;
+    }
+    th {
+      background-color: #3f51b5;
+      color: white;
+    }
+    td button {
+      padding: 6px 12px;
+      background-color: #f44336;
+      color: white;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    td button:hover {
+      background-color: #e53935;
+    }
+    td select {
+      padding: 6px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    td select:focus {
+      outline: none;
+      border-color: #3f51b5;
+    }
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #2196F3;
+      color: white;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .submit-btn:hover {
+      background-color: #1976D2;
+    }
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+      }
+      .form-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Attendance App</h1>
+  </header>
+
+  <div class="container">
+    <h2>Manage Students</h2>
+
+    <form id="addStudentForm" class="form-group">
+      <input type="text" id="studentName" placeholder="Student Name" required />
+      <input type="text" id="rollNumber" placeholder="Roll Number" required />
+      <button type="submit">Add Student</button>
+    </form>
+
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>Roll Number</th>
+          <th>Name</th>
+          <th>Attendance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be dynamically populated -->
+      </tbody>
+    </table>
+
+    <button class="submit-btn" onclick="submitAttendance()">Submit Attendance</button>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3000";
+
+    async function fetchStudents() {
+      const response = await fetch(`${API_URL}/students`);
+      const students = await response.json();
+      renderStudents(students);
+    }
+
+    function renderStudents(students) {
+      const tableBody = document.querySelector("#studentTable tbody");
+      tableBody.innerHTML = "";
+      students.forEach(student => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${student.rollNumber}</td>
+          <td>${student.name}</td>
+          <td>
+            <select onchange="updateAttendance(${student.id}, this.value)">
+              <option value="1" ${student.attendance === 1 ? "selected" : ""}>Present</option>
+              <option value="0" ${student.attendance === 0 ? "selected" : ""}>Absent</option>
+            </select>
+          </td>
+          <td>
+            <button onclick="deleteStudent(${student.id})">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    async function addStudent(event) {
+      event.preventDefault();
+      const name = document.getElementById("studentName").value;
+      const rollNumber = document.getElementById("rollNumber").value;
+
+      await fetch(`${API_URL}/students`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, rollNumber, attendance: 1 })
+      });
+
+      document.getElementById("addStudentForm").reset();
+      fetchStudents();
+    }
+
+    async function deleteStudent(id) {
+      await fetch(`${API_URL}/students/${id}`, { method: "DELETE" });
+      fetchStudents();
+    }
+
+    async function updateAttendance(id, attendance) {
+      await fetch(`${API_URL}/students/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attendance: parseInt(attendance) })
+      });
+    }
+
+    async function submitAttendance() {
+      const response = await fetch(`${API_URL}/download`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attendance_${new Date().toISOString().split("T")[0]}.csv`;
+      a.click();
+    }
+
+    document.getElementById("addStudentForm").addEventListener("submit", addStudent);
+
+    fetchStudents();
+  </script>
+</body>
+</html>
